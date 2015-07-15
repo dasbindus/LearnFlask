@@ -1,7 +1,7 @@
 __author__ = 'Baidong'
 
 
-from flask import Flask, render_template, request, make_response, redirect
+from flask import Flask, render_template, session, request, make_response, redirect, url_for
 from flask.ext.script import Manager
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.moment import Moment
@@ -34,12 +34,11 @@ def internal_server_error(e):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    name = None
     form = NameForm()
     if form.validate_on_submit():
-        name = form.name.data
-        form.name.data=''
-    return render_template('index.html', form=form, name=name, current_time=datetime.utcnow())
+        session['name'] = form.name.data
+        return redirect(url_for('index'))
+    return render_template('index.html', form=form, name=session.get('name'), current_time=datetime.utcnow())
 
 @app.route('/user/<name>')
 def user(name):
