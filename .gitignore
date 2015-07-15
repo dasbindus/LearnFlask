@@ -1,0 +1,14 @@
+*.py[doc]
+
+# C extensions
+*.so
+
+# Packages
+*.egg
+*.egg-info
+
+# SQLite databases
+*.sqlite
+
+# Virtual environment
+venv
