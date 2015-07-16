@@ -13,6 +13,7 @@ from flask.ext.wtf import Form
 from wtforms import StringField, SubmitField
 from wtforms.validators import Required
 from flask.ext.sqlalchemy import SQLAlchemy
+from flask.ext.migrate import Migrate, MigrateCommand
 # from sqlalchemy import create_engine
 
 
@@ -32,6 +33,8 @@ moment = Moment(app)
 db = SQLAlchemy(app)
 # use create_engine() to create "engine object"
 # engine = create_engine('mysql+mysqlconnector://root:11235813@localhost:3306/test_flask')
+migrate = Migrate(app, db)
+
 
 class Role(db.Model):
     __tablename__ = 'roles'
@@ -55,6 +58,13 @@ class User(db.Model):
 class NameForm(Form):
     name = StringField('What\'s your name?', validators=[Required()])
     submit = SubmitField('Submit')
+
+
+def make_shell_context():
+    return dict(app=app, db=db, Role=Role, User=User)
+manager.add_command("shell", Shell(make_context=make_shell_context))
+manager.add_command("db", MigrateCommand)
+
 
 @app.errorhandler(404)
 def page_not_found(e):
