@@ -14,17 +14,23 @@ from wtforms import StringField, SubmitField
 from wtforms.validators import Required
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.migrate import Migrate, MigrateCommand
+from flask.ext.mail import Mail, Message
 # from sqlalchemy import create_engine
 
-
-DATABASE_NAME = 'test_flask'
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'CaNYoUSeEMeNoW'
 # this method to create "SQLAlchemy object" by using "mysql-connector-python" module
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:11235813@localhost:3306/test_flask'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:root@localhost:3306/test_flask'
 # 为 True 时,每次请求结束后都会自动提交数据库中的变动
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
+app.config['MAIL_SERVER'] = 'smtp.163.com'
+app.config['MAIL_PORT'] = 25
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['MYBLOG_MAIL_SUBJECT_PREFIX'] = '[MYBLOG INFO]'
+app.config['MYBLOG_MAIL_SENDER'] = os.environ.get('MAIL_USERNAME')
+app.config['MYBLOG_ADMIN'] = os.environ.get('MYBLOG_ADMIN') # admin of the blog ,mail reciever
 
 
 manager = Manager(app)
@@ -34,6 +40,7 @@ db = SQLAlchemy(app)
 # use create_engine() to create "engine object"
 # engine = create_engine('mysql+mysqlconnector://root:11235813@localhost:3306/test_flask')
 migrate = Migrate(app, db)
+mail = Mail(app)
 
 
 class Role(db.Model):
@@ -58,6 +65,14 @@ class User(db.Model):
 class NameForm(Form):
     name = StringField('What\'s your name?', validators=[Required()])
     submit = SubmitField('Submit')
+
+
+def send_mail(to, subject, template, **kw):
+    msg = Message(app.config['MYBLOG_MAIL_SUBJECT_PREFIX'] + ' ' + subject, 
+        sender=app.config['MYBLOG_MAIL_SENDER'], recipients=[to])
+    msg.body = render_template(template + '.txt', **kw)
+    msg.html = render_template(template + '.html', **kw)
+    mail.send(msg)
 
 
 def make_shell_context():
@@ -88,11 +103,15 @@ def index():
             user = User(username=form.name.data)
             db.session.add(user)
             session['known'] = False
+            if app.config['MYBLOG_ADMIN']:
+                send_mail(app.config['MYBLOG_ADMIN'], 'New User', 
+                    'mail/new_user', user=user)
         else:
             session['known'] = True
         session['name'] = form.name.data
         return redirect(url_for('index'))
-    return render_template('index.html', form=form, name=session.get('name'), known=session.get('known'), current_time=datetime.utcnow())
+    return render_template('index.html', form=form, name=session.get('name'), 
+        known=session.get('known', False), current_time=datetime.utcnow())
 
 
 @app.route('/user/<name>')
@@ -100,5 +119,5 @@ def user(name):
     return render_template('user.html', name=name)
 
 if __name__ == '__main__':
-    db.create_all()
+    # db.create_all()
     manager.run()
