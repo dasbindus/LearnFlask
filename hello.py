@@ -1,3 +1,6 @@
+#! /usr/bin/env python
+# -*- coding:utf-8 -*-
+
 __author__ = 'Baidong'
 
 import os
@@ -19,7 +22,9 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'CaNYoUSeEMeNoW'
 # this method to create "SQLAlchemy object" by using "mysql-connector-python" module
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:11235813@localhost:3306/test_flask'
+# 为 True 时,每次请求结束后都会自动提交数据库中的变动
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
+
 
 manager = Manager(app)
 bootstrap = Bootstrap(app)
@@ -65,12 +70,20 @@ def internal_server_error(e):
 def index():
     form = NameForm()
     if form.validate_on_submit():
+        user = User.query.filter_by(username=form.name.data).first()
         old_name = session.get('name')
         if old_name is not None and old_name != form.name.data:
             flash('You have changed your name.')
+        if user is None:
+            user = User(username=form.name.data)
+            db.session.add(user)
+            session['known'] = False
+        else:
+            session['known'] = True
         session['name'] = form.name.data
         return redirect(url_for('index'))
-    return render_template('index.html', form=form, name=session.get('name'), current_time=datetime.utcnow())
+    return render_template('index.html', form=form, name=session.get('name'), known=session.get('known'), current_time=datetime.utcnow())
+
 
 @app.route('/user/<name>')
 def user(name):
