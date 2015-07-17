@@ -73,7 +73,7 @@ def send_async_email(app, msg):
         mail.send(msg)
 
 
-def send_mail(to, subject, template, **kw):
+def send_email(to, subject, template, **kw):
     msg = Message(app.config['MYBLOG_MAIL_SUBJECT_PREFIX'] + ' ' + subject, 
         sender=app.config['MYBLOG_MAIL_SENDER'], recipients=[to])
     msg.body = render_template(template + '.txt', **kw)
@@ -112,7 +112,7 @@ def index():
             db.session.add(user)
             session['known'] = False
             if app.config['MYBLOG_ADMIN']:
-                send_mail(app.config['MYBLOG_ADMIN'], 'New User', 
+                send_email(app.config['MYBLOG_ADMIN'], 'New User', 
                     'mail/new_user', user=user)
         else:
             session['known'] = True
