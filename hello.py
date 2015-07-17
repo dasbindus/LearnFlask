@@ -15,6 +15,7 @@ from wtforms.validators import Required
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.migrate import Migrate, MigrateCommand
 from flask.ext.mail import Mail, Message
+from threading import Thread
 # from sqlalchemy import create_engine
 
 
@@ -67,12 +68,19 @@ class NameForm(Form):
     submit = SubmitField('Submit')
 
 
+def send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
+
+
 def send_mail(to, subject, template, **kw):
     msg = Message(app.config['MYBLOG_MAIL_SUBJECT_PREFIX'] + ' ' + subject, 
         sender=app.config['MYBLOG_MAIL_SENDER'], recipients=[to])
     msg.body = render_template(template + '.txt', **kw)
     msg.html = render_template(template + '.html', **kw)
-    mail.send(msg)
+    thr = Thread(target=send_async_email, args=[app, msg])
+    thr.start()
+    return thr
 
 
 def make_shell_context():
