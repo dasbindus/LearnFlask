@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 # -*- coding:utf-8 -*-
 
+__author__ = 'Jack Bai'
+
 from flask import Flask
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.mail import Mail
@@ -8,7 +10,6 @@ from flask.ext.moment import Moment
 from flask.ext.sqlalchemy import SQLAlchemy
 from config import config
 
-__author__ = 'Jack Bai'
 
 bootstrap = Bootstrap()
 mail = Mail()
@@ -42,5 +43,8 @@ def create_app(config_name):
     # ===============================================
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
+
+    from .auth import auth as auth_blueprint
+    app.register_blueprint(auth_blueprint, url_prefix='/auth') # 注册后Blueprint中定义的所有路由都会加上指定的前缀, e.g. /login => /auth/login
 
     return app
