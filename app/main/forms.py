@@ -6,6 +6,7 @@ __author__ = 'Jack Bai'
 from flask.ext.wtf import Form
 from wtforms import StringField, TextAreaField, BooleanField, SelectField, SubmitField, ValidationError
 from wtforms.validators import Required, Length, Regexp, Email
+from flask.ext.pagedown.fields import PageDownField
 from ..models import Role, User
 
 
@@ -47,5 +48,5 @@ class EditProfileAdminForm(Form):
 
 
 class PostForm(Form):
-    body = TextAreaField("What's on your mind?", validators=[Required()])
+    body = PageDownField("What's on your mind?", validators=[Required()])
     submit = SubmitField('Submit')
