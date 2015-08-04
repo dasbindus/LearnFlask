@@ -21,6 +21,7 @@ class Config:
     MYBLOG_ADMIN = os.environ.get('MYBLOG_ADMIN')
     MYBLOG_POSTS_PER_PAGE = 20
     MYBLOG_FOLLOWERS_PER_PAGE = 50
+    MYBLOG_COMMENTS_PER_PAGE = 15
 
     @staticmethod
     def init_app(app):
