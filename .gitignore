@@ -12,3 +12,6 @@
 
 # Virtual environment
 venv
+
+# env params
+ENV_PARAM
