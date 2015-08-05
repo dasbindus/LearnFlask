@@ -57,4 +57,7 @@ def create_app(config_name):
     from .auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint, url_prefix='/auth') # 注册后Blueprint中定义的所有路由都会加上指定的前缀, e.g. /login => /auth/login
 
+    from .api_1_0 import api as api_1_0_blueprint
+    app.register_blueprint(api_1_0_blueprint, url_prefix='/api/v1.0')
+
     return app
